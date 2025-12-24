@@ -35,3 +35,87 @@ This project goes beyond tutorials and demonstrates **how real systems are desig
 </p>
 
 ### 🔄 Request Flow
+
+
+---
+
+## 🧩 Tech Stack
+
+### 🎨 Frontend
+- React
+- Axios
+- Nginx (Production build serving)
+
+### ⚙️ Backend
+- **Spring Boot** – Booking Service, Vehicle Service
+- **Node.js + Express** – Auth Service
+- **Spring Cloud Gateway** – API Gateway
+
+### 🗄️ Database
+- MySQL  
+- Separate database per microservice
+
+### 🚀 DevOps / Infrastructure
+- Docker
+- Docker Compose
+- Container networking
+- Persistent volumes
+- JWT authentication
+- Gateway-level CORS handling
+
+---
+
+## 🔐 Authentication & Security Flow (JWT)
+
+1. User logs in via `/auth/login`
+2. Auth Service generates a **JWT**
+3. Frontend stores JWT securely
+4. Frontend sends JWT in `Authorization: Bearer <token>`
+5. API Gateway:
+   - Validates JWT
+   - Extracts user ID
+   - Injects `x-user-id` header
+6. Downstream services trust gateway identity
+
+✔ No service directly validates JWT  
+✔ Gateway acts as **security boundary**
+
+---
+
+## 📂 Microservices Breakdown
+
+### 🔑 Auth Service (Node.js + Express)
+- User registration & login
+- Password hashing (bcrypt)
+- JWT token generation
+- MySQL connection pooling
+- Stateless service behind Gateway
+
+### 📅 Booking Service (Spring Boot)
+- Booking domain logic
+- Spring Data JPA
+- Hibernate ORM
+- Dedicated MySQL database
+
+### 🚘 Vehicle Service (Spring Boot)
+- Vehicle domain logic
+- Spring Data JPA
+- Hibernate ORM
+- Dedicated MySQL database
+
+### 🌐 API Gateway (Spring Cloud Gateway)
+- Central entry point
+- Routing & filtering
+- CORS handling
+- JWT validation
+- Header propagation
+
+---
+
+## 🐳 Docker Setup
+
+### ▶️ Start the full system
+```bash
+docker compose up --build
+
+
