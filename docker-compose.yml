@@ -1,0 +1,107 @@
+
+services:
+  auth-db:
+    image: mysql:8.0
+    container_name: auth-mysql1
+    restart: unless-stopped
+    environment:
+      MYSQL_USER: root
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: userdb
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mysql_data:/var/lib/mysql
+  vehicle-db:
+    image: mysql:8.0
+    container_name: vehicle-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: vehicleDb
+    
+    volumes:
+      - vehicle_mysql_data:/var/lib/mysql
+  booking-db:
+    image: mysql:8.0  
+    container_name: booking-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: bookingDb
+    
+    volumes:
+      - booking_mysql_data:/var/lib/mysql
+
+  frontend:
+    build: ./frontend
+    container_name: react-frontend
+    ports:
+      - "5174:80"   # Maps React frontend to host port 5174
+    restart: unless-stopped
+    depends_on:
+      - auth-service
+  
+
+  vehicle-service:
+    build: ./backend/vehicle-service
+    container_name: vehicle-service
+    restart: unless-stopped
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://vehicle-db:3306/vehicleDb?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=example
+    ports:
+      - "5051:5051"
+    depends_on:
+      - vehicle-db
+
+  booking-service:
+    build: ./backend/booking_service  
+    container_name: booking-service
+    restart: unless-stopped
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://booking-db:3306/bookingDb?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=example
+    ports:
+      - "5052:5052" 
+    depends_on:
+      - booking-db
+    
+
+  gateway-service:
+    build: ./backend/gateway-service
+    container_name: gateway-service
+    restart: unless-stopped
+    ports:
+      - "5050:5050"
+    depends_on:
+      - auth-service
+      - vehicle-service
+      - booking-service
+  auth-service:
+    build: ./backend/auth-service
+    container_name: auth-service
+    restart: unless-stopped
+    ports:
+      - "5054:3000"
+    environment:
+      DB_HOST: auth-db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: example
+      DB_NAME: userdb
+    depends_on:
+      - auth-db
+
+  
+
+volumes:
+  mysql_data:
+  vehicle_mysql_data:
+  booking_mysql_data:
+
